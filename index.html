@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个人主页</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Noto+Sans+SC:wght@300;400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0e17;
+    --surface: rgba(14, 22, 36, 0.85);
+    --border: rgba(0, 200, 255, 0.15);
+    --accent: #00c8ff;
+    --accent2: #7b5cff;
+    --text: #c8d6e5;
+    --text-dim: #6b7d95;
+    --glow: 0 0 20px rgba(0, 200, 255, 0.25);
+    --glow-strong: 0 0 40px rgba(0, 200, 255, 0.4);
+  }
+
+  body {
+    font-family: 'Noto Sans SC', 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 动态网格背景 */
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0, 200, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 200, 255, 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at 50% 40%, black 40%, transparent 70%);
+  }
+
+  /* 流动光晕 */
+  .bg-aurora {
+    position: fixed; z-index: 0;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    filter: blur(140px); opacity: 0.12;
+    animation: floatA 12s ease-in-out infinite;
+  }
+  .bg-aurora.a1 {
+    top: -200px; left: -10%;
+    background: radial-gradient(circle, var(--accent), transparent);
+    animation-delay: 0s;
+  }
+  .bg-aurora.a2 {
+    bottom: -200px; right: -5%;
+    background: radial-gradient(circle, var(--accent2), transparent);
+    animation-delay: -6s;
+  }
+  @keyframes floatA {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(40px, -30px) scale(1.15); }
+    66% { transform: translate(-30px, 20px) scale(0.9); }
+  }
+
+  /* 主容器 */
+  .main {
+    position: relative; z-index: 1;
+    max-width: 960px; margin: 0 auto; padding: 60px 24px 80px;
+  }
+
+  /* 顶部导航标识线 */
+  .top-bar {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 60px;
+  }
+  .top-bar .line {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  .top-bar .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--accent); letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  /* Hero 区域 */
+  .hero { margin-bottom: 60px; }
+  .hero .pre-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: var(--accent); letter-spacing: 3px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: clamp(40px, 6vw, 68px); font-weight: 700;
+    line-height: 1.15; margin-bottom: 16px;
+  }
+  .hero h1 .hl { color: var(--accent); }
+  .hero .sub {
+    font-size: 18px; color: var(--text-dim); font-weight: 300;
+    max-width: 560px; line-height: 1.7;
+  }
+
+  /* 卡片通用 */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 36px;
+    backdrop-filter: blur(20px);
+    box-shadow: var(--glow);
+    transition: box-shadow 0.4s, border-color 0.4s;
+  }
+  .card:hover {
+    box-shadow: var(--glow-strong);
+    border-color: rgba(0, 200, 255, 0.35);
+  }
+
+  /* Section 标题 */
+  .sec-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: var(--accent); letter-spacing: 2px;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sec-title::before {
+    content: '◆';
+    font-size: 8px;
+  }
+  .sec-title::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* 两栏布局 */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 680px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* 自我介绍模块 */
+  .intro .stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-top: 24px;
+  }
+  .stat-item {
+    background: rgba(0, 200, 255, 0.04);
+    border-radius: 10px; padding: 16px; text-align: center;
+    border: 1px solid rgba(0, 200, 255, 0.08);
+  }
+  .stat-item .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px; font-weight: 600; color: var(--accent);
+  }
+  .stat-item .label {
+    font-size: 12px; color: var(--text-dim); margin-top: 4px;
+  }
+  .intro .bio {
+    font-size: 15px; line-height: 1.8; color: var(--text);
+    text-indent: 2em;
+  }
+  .skill-tags {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;
+  }
+  .skill-tags span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 200, 255, 0.25);
+    color: var(--accent);
+    background: rgba(0, 200, 255, 0.05);
+  }
+
+  /* 联系方式 */
+  .contact-list {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .contact-list li {
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+  }
+  .contact-list .icon {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px;
+    background: rgba(0, 200, 255, 0.08);
+    border: 1px solid rgba(0, 200, 255, 0.2);
+    font-size: 18px; flex-shrink: 0;
+  }
+  .contact-list .val {
+    color: var(--text); word-break: break-all;
+  }
+  .contact-list .lbl {
+    font-size: 11px; color: var(--text-dim);
+  }
+
+  /* 二维码区域 */
+  .qr-section {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    padding-top: 8px;
+  }
+  .qr-canvas-wrap {
+    background: white; padding: 16px; border-radius: 16px;
+    box-shadow: 0 0 30px rgba(0, 200, 255, 0.2);
+    display: inline-block;
+  }
+  .qr-canvas-wrap canvas { display: block; }
+  .qr-hint {
+    font-size: 13px; color: var(--text-dim); text-align: center; line-height: 1.6;
+  }
+
+  /* 底部 */
+  .footer {
+    text-align: center; margin-top: 80px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--text-dim); letter-spacing: 1px;
+  }
+  .footer span { color: var(--accent); }
+
+  /* 扫描线动效 - 顶部装饰 */
+  .scan-line {
+    position: fixed; top: 0; left: 0; right: 0; height: 1px; z-index: 99;
+    background: rgba(0, 200, 255, 0.2);
+    animation: scanDown 4s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes scanDown {
+    0% { top: -1px; }
+    100% { top: 100vh; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-aurora a1"></div>
+<div class="bg-aurora a2"></div>
+<div class="scan-line"></div>
+
+<main class="main">
+
+  <!-- 顶部标识 -->
+  <div class="top-bar">
+    <span class="tag">PORTFOLIO · 2026</span>
+    <span class="line"></span>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <p class="pre-title">HELLO, I'M</p>
+    <h1><span class="hl">秦</span>振鑫</h1>
+    <p class="sub">全栈开发工程师 / 开源爱好者 / 终身学习者<br>用代码构建数字世界，以技术驱动产品创新。</p>
+  </section>
+
+  <!-- 两栏内容 -->
+  <div class="grid-2">
+
+    <!-- 左栏：自我介绍 -->
+    <section class="card intro">
+      <h2 class="sec-title">自我介绍</h2>
+      <p class="bio">
+        拥有 7 年全栈开发经验，专注于高性能 Web 应用与分布式系统架构设计。擅长 React / Vue 生态与 Node.js / Go 后端开发，对云原生、CI/CD 流水线有深入实践。热爱开源社区，曾为多个知名项目贡献代码。工作之余喜欢研究新兴技术，撰写技术博客，分享开发经验。
+      </p>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="num">7+</div>
+          <div class="label">年开发经验</div>
+        </div>
+        <div class="stat-item">
+          <div class="num">50+</div>
+          <div class="label">完成项目</div>
+        </div>
+        <div class="stat-item">
+          <div class="num">300+</div>
+          <div class="label">开源贡献</div>
+        </div>
+        <div class="stat-item">
+          <div class="num">1.2k</div>
+          <div class="label">GitHub Stars</div>
+        </div>
+      </div>
+      <div class="skill-tags">
+        <span>React</span> <span>Vue</span> <span>TypeScript</span>
+        <span>Node.js</span> <span>Go</span> <span>Python</span>
+        <span>Docker</span> <span>K8s</span> <span>AWS</span>
+        <span>PostgreSQL</span> <span>Redis</span> <span>GraphQL</span>
+      </div>
+    </section>
+
+    <!-- 右栏：联系方式 + 二维码 -->
+    <section class="card">
+      <h2 class="sec-title">联系方式</h2>
+      <ul class="contact-list">
+        <li>
+          <div class="icon">&#9993;</div>
+          <div>
+            <div class="lbl">Email</div>
+            <div class="val">3521500588@qq.com</div>
+          </div>
+        </li>
+        <li>
+          <div class="icon">&#9742;</div>
+          <div>
+            <div class="lbl">Phone</div>
+            <div class="val">19874257980</div>
+          </div>
+        </li>
+        <li>
+          <div class="icon">&#127758;</div>
+          <div>
+            <div class="lbl">GitHub</div>
+            <div class="val">github.com/qinzhenxin</div>
+          </div>
+        </li>
+        <li>
+          <div class="icon">&#128172;</div>
+          <div>
+            <div class="lbl">微信</div>
+            <div class="val">qzx666402</div>
+          </div>
+        </li>
+      </ul>
+
+      <!-- 二维码 -->
+      <div style="margin-top: 28px;">
+        <h2 class="sec-title">扫码联系</h2>
+        <div class="qr-section">
+          <div class="qr-canvas-wrap">
+            <img src="e7369f9802528824b1d1ef7ef5b03bc2.jpeg" alt="QR Code" width="180" height="180" style="display:block;">
+          </div>
+          <p class="qr-hint">微信扫一扫，添加好友<br>备注"GitHub"更快通过</p>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /grid-2 -->
+
+  <div class="footer">
+    &copy; 2026 <span>秦振鑫</span> · 用热爱驱动每一行代码
+  </div>
+
+</main>
+
+<!-- 二维码图片，替换 e7369f9802528824b1d1ef7ef5b03bc2.jpeg 即可 -->
+
+</body>
+</html>
